@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DyslexiaReader - A voice-first reading coach for children with dyslexia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Lexend', sans-serif;
+      background-color: #f3e8fd; /* Lavender background */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1rem;
+      padding-top: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding-top: 4rem;
+      }
+    }
+
+    /* Header styles */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #581c87; /* Purple 900 */
+      margin-bottom: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 3rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      h1 {
+        font-size: 3.75rem;
+      }
+    }
+
+    header p {
+      font-size: 1.25rem;
+      color: #6b21a8; /* Purple 800 */
+      max-width: 36rem;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 768px) {
+      header p {
+        font-size: 1.5rem;
+      }
+    }
+
+    /* Welcome message styles */
+    .welcome-card {
+      background-color: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      max-width: 36rem;
+      width: 100%;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2.5rem;
+    }
+
+    .welcome-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .welcome-message {
+      flex: 1;
+      font-size: 1.125rem;
+      color: #581c87; /* Purple 900 */
+      line-height: 1.7;
+    }
+
+    .audio-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.375rem;
+      border: 1px solid #e2e8f0;
+      background-color: white;
+      color: #7c3aed; /* Purple 600 */
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+      margin-top: 0.25rem;
+    }
+
+    .audio-button:hover {
+      background-color: #f3e8fd;
+    }
+
+    .audio-button.playing {
+      background-color: #f3e8fd;
+      color: #6d28d9; /* Purple 700 */
+    }
+
+    /* Feature navigation styles */
+    .features-container {
+      width: 100%;
+      max-width: 56rem;
+    }
+
+    .features-heading {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #581c87; /* Purple 900 */
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .features-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .feature-card {
+      display: block;
+      text-decoration: none;
+    }
+
+    .feature-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      height: 100%;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+      color: white;
+    }
+
+    .feature-content:hover {
+      transform: scale(1.05);
+    }
+
+    .feature-icon {
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-description {
+      opacity: 0.9;
+    }
+
+    /* Feature card colors */
+    .feature-reading {
+      background-color: #22c55e; /* Green 500 */
+    }
+    .feature-reading:hover {
+      background-color: #16a34a; /* Green 600 */
+    }
+
+    .feature-help {
+      background-color: #3b82f6; /* Blue 500 */
+    }
+    .feature-help:hover {
+      background-color: #2563eb; /* Blue 600 */
+    }
+
+    .feature-badges {
+      background-color: #f59e0b; /* Amber 500 */
+    }
+    .feature-badges:hover {
+      background-color: #d97706; /* Amber 600 */
+    }
+
+    .feature-parent {
+      background-color: #9333ea; /* Purple 600 */
+    }
+    .feature-parent:hover {
+      background-color: #7e22ce; /* Purple 700 */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DyslexiaReader</h1>
+    <p>A voice-first reading coach for children with dyslexia.</p>
+  </header>
+
+  <div class="welcome-card">
+    <div class="welcome-content">
+      <p class="welcome-message">Hi there! I'm here to help you read, learn, and grow — one word at a time. Let's get started!</p>
+      <button id="audioButton" class="audio-button" aria-label="Play welcome message">
+        <!-- Volume/Speaker Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </button>
+    </div>
+    <audio id="welcomeAudio" src="welcome-message.mp3"></audio>
+  </div>
+
+  <div class="features-container">
+    <h2 class="features-heading">What would you like to do?</h2>
+
+    <div class="features-grid">
+      <!-- Reading Practice Feature -->
+      <a href="reading_coach.html" class="feature-card">
+        <div class="feature-content feature-reading">
+          <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          <h3 class="feature-title">Start Reading Practice</h3>
+          <p class="feature-description">Practice reading with our interactive coach</p>
+        </div>
+      </a>
+
+      <!-- Ask for Help Feature -->
+      <a href="help.html" class="feature-card">
+        <div class="feature-content feature-help">
+          <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          <h3 class="feature-title">Ask for Help</h3>
+          <p class="feature-description">Get assistance whenever you need it</p>
+        </div>
+      </a>
+
+      <!-- Earn Badges Feature -->
+      
+
+      <!-- Parent Guidance Feature -->
+      <a href="QandApage.html" class="feature-card">
+        <div class="feature-content feature-parent">
+          <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <h3 class="feature-title">Parent Guidance</h3>
+          <p class="feature-description">Resources and support for parents</p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Audio playback functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const audioButton = document.getElementById('audioButton');
+      const welcomeAudio = document.getElementById('welcomeAudio');
+      let isPlaying = false;
+
+      audioButton.addEventListener('click', function() {
+        if (isPlaying) {
+          welcomeAudio.pause();
+          audioButton.classList.remove('playing');
+          audioButton.setAttribute('aria-label', 'Play welcome message');
+          isPlaying = false;
+        } else {
+          welcomeAudio.play().catch(error => {
+            console.error('Failed to play audio:', error);
+          });
+          audioButton.classList.add('playing');
+          audioButton.setAttribute('aria-label', 'Pause welcome message');
+          isPlaying = true;
+        }
+      });
+
+      welcomeAudio.addEventListener('ended', function() {
+        audioButton.classList.remove('playing');
+        audioButton.setAttribute('aria-label', 'Play welcome message');
+        isPlaying = false;
+      });
+    });
+  </script>
+</body>
+</html>

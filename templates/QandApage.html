@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask a Specialist - Dyslexia Support</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Sans+MS&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6a5acd; /* Slate blue */
+            --secondary-color: #f8f0ff; /* Very light purple */
+            --accent-color: #4caf50; /* Green */
+            --text-color: #333333;
+            --light-text: #666666;
+            --user-bubble: #e3f2fd; /* Light blue */
+            --assistant-bubble: #f0f4f8; /* Light gray-blue */
+            --border-radius: 20px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Open Sans', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--secondary-color);
+            letter-spacing: 0.05em;
+            word-spacing: 0.1em;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 18px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .user {
+            background-color: var(--user-bubble);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .assistant {
+            background-color: var(--assistant-bubble);
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-bubble p {
+            margin: 0;
+        }
+
+        .welcome-message {
+            margin-bottom: 30px;
+        }
+
+        .input-container {
+            margin-top: auto;
+        }
+
+        .input-wrapper {
+            display: flex;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            overflow: hidden;
+            background-color: white;
+            transition: border-color 0.3s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary-color);
+        }
+
+        textarea {
+            flex: 1;
+            border: none;
+            padding: 15px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            letter-spacing: 0.05em;
+            word-spacing: 0.1em;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #3d8b40;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .helper-text {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--light-text);
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+
+        .disclaimer {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Loading animation */
+        .typing-indicator {
+            display: flex;
+            padding: 15px;
+            width: fit-content;
+            background-color: var(--assistant-bubble);
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                min-height: 95vh;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .chat-bubble {
+                max-width: 90%;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ask a Specialist</h1>
+            <p class="subtitle">Get helpful tips and personalized advice.</p>
+        </header>
+
+        <main>
+            <div class="chat-container" id="chatContainer">
+                <div class="welcome-message">
+                    <div class="chat-bubble assistant">
+                        <p>Hello! I'm here to help answer your questions about dyslexia. What would you like to know?</p>
+                    </div>
+                </div>
+                <!-- Chat messages will be added here dynamically -->
+            </div>
+
+            <div class="input-container">
+                <form id="questionForm">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="Type your question here..." 
+                            rows="2"
+                            aria-label="Your question"
+                            required
+                        ></textarea>
+                        <button type="submit" id="submitButton" aria-label="Submit question">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <p class="helper-text">Examples: "How can I help my child with reading?", "What are signs of dyslexia?"</p>
+                </form>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by AI to support parents and caregivers of children with dyslexia.</p>
+            <p class="disclaimer">This chatbot provides general information and is not a substitute for professional advice.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const questionForm = document.getElementById('questionForm');
+            const questionInput = document.getElementById('questionInput');
+            const submitButton = document.getElementById('submitButton');
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // Auto-resize textarea as user types
+            questionInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            
+            questionForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const question = questionInput.value.trim();
+                if (!question) return;
+                
+                // Disable input and button while processing
+                questionInput.disabled = true;
+                submitButton.disabled = true;
+                
+                // Add user question to chat
+                addMessageToChat('user', question);
+                
+                // Clear input
+                questionInput.value = '';
+                questionInput.style.height = 'auto';
+                
+                // Show typing indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator';
+                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                chatContainer.appendChild(typingIndicator);
+                
+                // Scroll to bottom
+                scrollToBottom();
+                
+                // Simulate API delay
+                setTimeout(() => {
+                    // Remove typing indicator
+                    chatContainer.removeChild(typingIndicator);
+                    
+                    // Get answer from predefined responses
+                    const answer = getAnswer(question);
+                    
+                    // Add assistant response to chat
+                    addMessageToChat('assistant', answer);
+                    
+                    // Re-enable input and button
+                    questionInput.disabled = false;
+                    submitButton.disabled = false;
+                    questionInput.focus();
+                    
+                    // Scroll to bottom
+                    scrollToBottom();
+                }, 1500); // Simulate a delay for the response
+            });
+            
+            function addMessageToChat(role, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chat-bubble ${role}`;
+                
+                // Process message text (handle newlines, etc.)
+                const formattedMessage = message.replace(/\n/g, '<br>');
+                
+                messageDiv.innerHTML = `<p>${formattedMessage}</p>`;
+                chatContainer.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                scrollToBottom();
+            }
+            
+            function scrollToBottom() {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            function getAnswer(question) {
+                // Convert question to lowercase for easier matching
+                const lowerQuestion = question.toLowerCase();
+                
+                // Check for keywords in the question
+                if (lowerQuestion.includes('sign') || lowerQuestion.includes('symptom') || lowerQuestion.includes('identify')) {
+                    return "Common signs of dyslexia include:\n\n• Difficulty learning to read despite normal intelligence\n• Problems with accurate word recognition\n• Poor spelling and decoding abilities\n• Reading slowly or making errors when reading aloud\n• Avoiding activities that involve reading\n• Mispronouncing names or words, or problems retrieving words\n• Trouble understanding jokes or expressions that have a meaning not easily understood from the specific words\n\nIf you notice these signs, consider having your child evaluated by an educational psychologist or learning specialist.";
+                }
+                
+                if (lowerQuestion.includes('help') && (lowerQuestion.includes('read') || lowerQuestion.includes('reading'))) {
+                    return "To help your child with reading:\n\n• Read aloud together daily\n• Use audiobooks alongside printed books\n• Break reading into shorter sessions (15-20 minutes)\n• Use multisensory approaches (touch letters, draw in sand)\n• Play word games to build phonological awareness\n• Celebrate progress, no matter how small\n• Consider structured literacy programs like Orton-Gillingham\n• Use colored overlays if they help your child focus\n\nConsistency and patience are key. Make reading enjoyable rather than a chore.";
+                }
+                
+                if (lowerQuestion.includes('school') || lowerQuestion.includes('teacher') || lowerQuestion.includes('classroom')) {
+                    return "Working with your child's school:\n\n• Request a formal evaluation for learning disabilities\n• Discuss an Individualized Education Program (IEP) or 504 plan\n• Ask for accommodations like extra time on tests, audiobooks, or note-taking assistance\n• Maintain regular communication with teachers\n• Attend all parent-teacher conferences\n• Consider requesting a classroom aide or reading specialist\n• Ask about assistive technology available at school\n\nRemember, you are your child's best advocate. Be persistent but collaborative with school staff.";
+                }
+                
+                if (lowerQuestion.includes('technology') || lowerQuestion.includes('app') || lowerQuestion.includes('software')) {
+                    return "Helpful technology and apps for dyslexia include:\n\n• Text-to-speech software (like Natural Reader or Read&Write)\n• Speech-to-text tools (like Dragon Naturally Speaking)\n• Reading assistance apps (like Speechify or Voice Dream Reader)\n• Spelling and grammar checkers (like Grammarly)\n• Organization tools (like OneNote or Notion)\n• Reading trackers and rulers\n• Font-specific apps with dyslexia-friendly fonts\n• Mind-mapping software (like MindMeister)\n\nMany of these have free versions or trial periods to test what works best for your child.";
+                }
+                
+                if (lowerQuestion.includes('confidence') || lowerQuestion.includes('self-esteem') || lowerQuestion.includes('frustrat')) {
+                    return "Building confidence in a child with dyslexia:\n\n• Focus on their strengths and talents outside of reading\n• Celebrate small victories and improvements\n• Explain that dyslexia has nothing to do with intelligence\n• Share stories of successful people with dyslexia\n• Provide opportunities for success in areas they enjoy\n• Be patient and avoid showing frustration during reading practice\n• Consider connecting them with other children who have dyslexia\n• Use positive, specific praise for effort rather than just results\n\nRemember that emotional well-being is just as important as academic progress.";
+                }
+                
+                if (lowerQuestion.includes('cause') || lowerQuestion.includes('why') || lowerQuestion.includes('develop')) {
+                    return "Dyslexia is primarily caused by differences in how the brain processes language. It has a strong genetic component, often running in families. Specifically:\n\n• It involves differences in the parts of the brain that process language\n• It's not caused by vision problems or lack of intelligence\n• It's not the result of poor teaching or lack of effort\n• About 40% of siblings of children with dyslexia may also have it\n• If a parent has dyslexia, their children have about a 50% chance of having it\n\nResearch continues to improve our understanding of the neurological basis of dyslexia.";
+                }
+                
+                if (lowerQuestion.includes('test') || lowerQuestion.includes('diagnos') || lowerQuestion.includes('evaluat')) {
+                    return "Getting your child evaluated for dyslexia:\n\n• Start with your child's school and request a formal evaluation\n• If the school is unable to help, seek a private educational psychologist\n• A comprehensive evaluation typically includes:\n  - Tests of phonological processing\n  - Reading assessments (accuracy, fluency, comprehension)\n  - Spelling and writing assessments\n  - Language abilities\n  - Sometimes IQ testing\n• The evaluation should result in a detailed report with recommendations\n• Testing is usually covered by schools, but private evaluations can cost $1,500-$2,500\n\nEarly identification leads to better outcomes, so don't delay if you suspect dyslexia.";
+                }
+                
+                // Default response if no keywords match
+                return "Thank you for your question about dyslexia. While I don't have specific information on that particular topic, I'd recommend speaking with an educational psychologist, your child's teacher, or contacting organizations like the International Dyslexia Association for more detailed guidance. Would you like information about another aspect of dyslexia support?";
+            }
+            
+            // Focus input on page load
+            questionInput.focus();
+        });
+    </script>
+</body>
+</html>

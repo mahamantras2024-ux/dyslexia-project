@@ -1,0 +1,12 @@
+Flask
+flask-cors
+openai
+google-generativeai
+elevenlabs
+python-dotenv
+requests
+Pillow
+pytesseract
+tensorflow
+keras
+numpy

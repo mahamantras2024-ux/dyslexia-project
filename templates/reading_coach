@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Coach for Dyslexia</title>
+    <style>
+        /* Dyslexia-friendly styles with orange theme */
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+            word-spacing: 2px;
+            margin: 0;
+            padding: 0;
+            background-color: #fdba74; /* light orange background */
+            color: #7c2d12; /* dark brown text */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #9a3412; /* medium brown */
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 1rem 0;
+            color: #b45309; /* amber brown */
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        p, li {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            padding-left: 2rem;
+        }
+
+        .button {
+            background-color: #ea580c; /* orange-600 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #c2410c; /* orange-700 */
+        }
+
+        .button:disabled {
+            background-color: #d6d3d1; /* stone-300 */
+            cursor: not-allowed;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        /* Chat styles */
+        .chat-container {
+            display: none;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            background-color: #fff7ed; /* orange-50 */
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 80%;
+            position: relative;
+        }
+
+        .user-message {
+            background-color: #f97316; /* orange-500 */
+            color: white;
+            margin-left: auto;
+        }
+
+        .assistant-message {
+            background-color: white;
+            color: #7c2d12; /* orange-900 */
+            padding-right: 80px; /* Make room for both audio buttons */
+            padding-bottom: 40px; /* Make room for the rate control */
+        }
+
+        .message-content {
+            line-height: 1.6;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 1px solid #fed7aa; /* orange-200 */
+            border-radius: 4px;
+        }
+
+        .send-button {
+            width: 50px;
+            background-color: #ea580c; /* orange-600 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-button:hover {
+            background-color: #c2410c; /* orange-700 */
+        }
+
+        .send-button:disabled {
+            background-color: #d6d3d1; /* stone-300 */
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ea580c; /* orange-600 */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error message */
+        .error-message {
+            background-color: #fee2e2; /* red-100 */
+            color: #b91c1c; /* red-700 */
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* Audio buttons */
+        .audio-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .audio-button, .pause-button {
+            background-color: #ea580c; /* orange-600 */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .audio-button:hover, .pause-button:hover {
+            background-color: #c2410c; /* orange-700 */
+        }
+
+        .audio-button.playing {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        .pause-button.paused {
+            background-color: #d97706; /* amber-600 */
+        }
+
+        /* Rate control */
+        .rate-control {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .rate-slider {
+            flex: 1;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #fed7aa; /* orange-200 */
+            outline: none;
+            border-radius: 5px;
+        }
+
+        .rate-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ea580c; /* orange-600 */
+            cursor: pointer;
+        }
+
+        .rate-slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ea580c; /* orange-600 */
+            cursor: pointer;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reading Coach for Dyslexia</h1>
+        
+        <div class="card">
+            <h2>Improve your reading skills</h2>
+            <p>
+                Our reading coach is designed specifically for people with dyslexia. We provide personalized coaching and
+                strategies to help you become a more confident reader.
+            </p>
+            <p>Meet Alex, your dedicated reading coach, who can help with:</p>
+            <ul>
+                <li>Reading fluency exercises</li>
+                <li>Comprehension strategies</li>
+                <li>Vocabulary building</li>
+                <li>Reading confidence</li>
+                <li>Personalized reading plans</li>
+            </ul>
+            
+            <div class="button-container">
+                <button id="chat-button" class="button">Start Coaching Session</button>
+            </div>
+        </div>
+        
+        <div id="chat-container" class="card chat-container">
+            <h2>Chat with Alex</h2>
+            
+            <div id="chat-messages" class="chat-messages">
+                <div class="message assistant-message" id="welcome-message">
+                    <div class="message-content">
+                        Hello! I'm Alex, your reading coach. I'm here to help you develop stronger reading skills. What would you like to work on today?
+                    </div>
+                    <div class="audio-controls">
+                        <button class="audio-button" aria-label="Repeat message" data-message="Hello! I'm Alex, your reading coach. I'm here to help you develop stronger reading skills. What would you like to work on today?">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            </svg>
+                        </button>
+                        <button class="pause-button" aria-label="Pause/Resume speech" data-state="play">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="rate-control">
+                        <span>Slow</span>
+                        <input type="range" class="rate-slider" min="0.5" max="1.5" step="0.1" value="0.9">
+                        <span>Fast</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="loading" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="chat-input" 
+                    class="chat-input" 
+                    placeholder="Type your message..."
+                >
+                <button id="send-button" class="send-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const chatButton = document.getElementById('chat-button');
+            const chatContainer = document.getElementById('chat-container');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-button');
+            const loading = document.getElementById('loading');
+            
+            // Speech synthesis
+            const synth = window.speechSynthesis;
+            let selectedVoice = null;
+            
+            // Speech state
+            let isSpeaking = false;
+            let isPaused = false;
+            let currentMessageId = null;
+            let currentSpeechRate = 0.9; // Default speech rate
+            
+            // Find a friendly voice
+            function loadVoices() {
+                const voices = synth.getVoices();
+                
+                // Try to find a suitable voice
+                // First preference: English voice with a warm tone
+                const englishVoice = voices.find(voice => 
+                    voice.lang.includes('en') && 
+                    !voice.name.toLowerCase().includes('zira')
+                );
+                
+                // Second preference: Any English voice
+                const anyEnglishVoice = voices.find(voice => 
+                    voice.lang.includes('en')
+                );
+                
+                // Set the selected voice
+                selectedVoice = englishVoice || anyEnglishVoice || voices[0];
+                
+                console.log('Selected voice:', selectedVoice ? selectedVoice.name : 'Default voice');
+                
+                // Speak the welcome message when voices are loaded
+                if (chatContainer.style.display === 'block') {
+                    const welcomeMessage = document.getElementById('welcome-message');
+                    const audioButton = welcomeMessage.querySelector('.audio-button');
+                    speakText(welcomeMessage.id, audioButton, audioButton.dataset.message);
+                }
+            }
+            
+            // Load voices when they're available
+            if (synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = loadVoices;
+            }
+            
+            // Load voices immediately in case they're already available
+            loadVoices();
+            
+            // Chat history
+            const messages = [
+                {
+                    role: 'assistant',
+                    content: "Hello! I'm Alex, your reading coach. I'm here to help you develop stronger reading skills. What would you like to work on today?"
+                }
+            ];
+            
+            // Show chat interface and speak welcome message
+            chatButton.addEventListener('click', function() {
+                chatContainer.style.display = 'block';
+                chatButton.style.display = 'none';
+                
+                // Speak the welcome message
+                const welcomeMessage = document.getElementById('welcome-message');
+                const audioButton = welcomeMessage.querySelector('.audio-button');
+                speakText(welcomeMessage.id, audioButton, audioButton.dataset.message);
+            });
+            
+            // Initialize rate sliders
+            document.querySelectorAll('.rate-slider').forEach(slider => {
+                slider.addEventListener('input', function() {
+                    currentSpeechRate = parseFloat(this.value);
+                    
+                    // If currently speaking, update the rate
+                    if (isSpeaking) {
+                        // Cancel current speech
+                        synth.cancel();
+                        
+                        // Get the current message and restart with new rate
+                        const messageElement = document.getElementById(currentMessageId);
+                        if (messageElement) {
+                            const audioButton = messageElement.querySelector('.audio-button');
+                            speakText(currentMessageId, audioButton, audioButton.dataset.message);
+                        }
+                    }
+                });
+            });
+            
+            // Send message on button click
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Send message on Enter key
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Send message function
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                
+                if (!message) return;
+                
+                // Add user message to chat
+                addMessage('user', message);
+                
+                // Clear input
+                chatInput.value = '';
+                
+                // Show loading spinner
+                loading.style.display = 'flex';
+                
+                // Disable send button
+                sendButton.disabled = true;
+                
+                // Connect to Flask backend
+                fetch('http://127.0.0.1:5000/readCoach', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        history: messages
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Add response to chat and automatically speak it
+                    addMessage('assistant', data.response, true);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Show error message in chat
+                    const errorElement = document.createElement('div');
+                    errorElement.classList.add('error-message');
+                    errorElement.textContent = "I'm having trouble connecting to my backend. Please make sure the Flask server is running at http://127.0.0.1:5000/readCoach";
+                    chatMessages.appendChild(errorElement);
+                    
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .finally(() => {
+                    // Hide loading spinner
+                    loading.style.display = 'none';
+                    
+                    // Enable send button
+                    sendButton.disabled = false;
+                });
+            }
+            
+            // Add message to chat
+            function addMessage(role, content, autoSpeak = false) {
+                // Add to messages array
+                messages.push({ role, content });
+                
+                // Create message element
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(role === 'user' ? 'user-message' : 'assistant-message');
+                
+                // Generate a unique ID for the message
+                const messageId = 'msg-' + Date.now();
+                messageElement.id = messageId;
+                
+                // For assistant messages, add content and controls
+                if (role === 'assistant') {
+                    // Create content container
+                    const contentContainer = document.createElement('div');
+                    contentContainer.classList.add('message-content');
+                    contentContainer.textContent = content;
+                    messageElement.appendChild(contentContainer);
+                    
+                    // Create audio controls
+                    const audioControls = document.createElement('div');
+                    audioControls.classList.add('audio-controls');
+                    
+                    // Create repeat button
+                    const audioButton = document.createElement('button');
+                    audioButton.classList.add('audio-button');
+                    audioButton.setAttribute('aria-label', 'Repeat message');
+                    audioButton.setAttribute('data-message', content);
+                    audioButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        </svg>
+                    `;
+                    
+                    // Add click event to speak the text
+                    audioButton.addEventListener('click', function() {
+                        speakText(messageId, this, content);
+                    });
+                    
+                    // Create pause/resume button
+                    const pauseButton = document.createElement('button');
+                    pauseButton.classList.add('pause-button');
+                    pauseButton.setAttribute('aria-label', 'Pause/Resume speech');
+                    pauseButton.setAttribute('data-state', 'play');
+                    pauseButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                    `;
+                    
+                    // Add click event to pause/resume speech
+                    pauseButton.addEventListener('click', function() {
+                        togglePause(this);
+                    });
+                    
+                    audioControls.appendChild(audioButton);
+                    audioControls.appendChild(pauseButton);
+                    messageElement.appendChild(audioControls);
+                    
+                    // Create rate control
+                    const rateControl = document.createElement('div');
+                    rateControl.classList.add('rate-control');
+                    rateControl.innerHTML = `
+                        <span>Slow</span>
+                        <input type="range" class="rate-slider" min="0.5" max="1.5" step="0.1" value="${currentSpeechRate}">
+                        <span>Fast</span>
+                    `;
+                    
+                    // Add event listener to rate slider
+                    const rateSlider = rateControl.querySelector('.rate-slider');
+                    rateSlider.addEventListener('input', function() {
+                        currentSpeechRate = parseFloat(this.value);
+                        
+                        // If currently speaking, update the rate
+                        if (isSpeaking && currentMessageId === messageId) {
+                            // Cancel current speech
+                            synth.cancel();
+                            
+                            // Restart with new rate
+                            speakText(messageId, audioButton, content);
+                        }
+                    });
+                    
+                    messageElement.appendChild(rateControl);
+                } else {
+                    // For user messages, just set the text content
+                    messageElement.textContent = content;
+                }
+                
+                // Add to chat
+                chatMessages.appendChild(messageElement);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Automatically speak assistant messages if requested
+                if (role === 'assistant' && autoSpeak) {
+                    // Small delay to ensure the DOM is updated
+                    setTimeout(() => {
+                        const audioButton = messageElement.querySelector('.audio-button');
+                        speakText(messageId, audioButton, content);
+                    }, 100);
+                }
+            }
+            
+            // Function to speak text
+            function speakText(messageId, button, text) {
+                // Stop any currently playing speech
+                synth.cancel();
+                
+                // Reset all buttons
+                document.querySelectorAll('.audio-button').forEach(btn => {
+                    btn.classList.remove('playing');
+                });
+                document.querySelectorAll('.pause-button').forEach(btn => {
+                    btn.classList.remove('paused');
+                    btn.setAttribute('data-state', 'play');
+                    btn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                    `;
+                });
+                
+                // If the same button was clicked and speech is in progress, just stop it
+                if (isSpeaking && currentMessageId === messageId) {
+                    isSpeaking = false;
+                    isPaused = false;
+                    currentMessageId = null;
+                    return;
+                }
+                
+                // Add playing class to the clicked button
+                button.classList.add('playing');
+                
+                // Update speech state
+                isSpeaking = true;
+                isPaused = false;
+                currentMessageId = messageId;
+                
+                // Create a new utterance
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Set voice properties for a motivational coach voice
+                const voices = synth.getVoices();
+                
+                // Try to find a suitable voice
+                let coachVoice = voices.find(voice => 
+                    voice.lang.includes('en') && 
+                    !voice.name.toLowerCase().includes('zira')
+                );
+                
+                // If no suitable voice found, try any English voice
+                if (!coachVoice) {
+                    coachVoice = voices.find(voice => voice.lang.includes('en'));
+                }
+                
+                // Set the voice if found
+                if (coachVoice) {
+                    utterance.voice = coachVoice;
+                }
+                
+                // Set other properties for a motivational coach voice
+                utterance.pitch = 1.1;  // Slightly higher pitch for energy
+                utterance.rate = currentSpeechRate;  // Use current speech rate
+                utterance.volume = 1.0; // Full volume
+                
+                // Handle the end of speech
+                utterance.onend = function() {
+                    button.classList.remove('playing');
+                    isSpeaking = false;
+                    isPaused = false;
+                    currentMessageId = null;
+                    
+                    // Reset pause button
+                    const pauseButton = document.querySelector(`#${messageId} .pause-button`);
+                    if (pauseButton) {
+                        pauseButton.classList.remove('paused');
+                        pauseButton.setAttribute('data-state', 'play');
+                        pauseButton.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                        `;
+                    }
+                };
+                
+                // Handle errors
+                utterance.onerror = function() {
+                    button.classList.remove('playing');
+                    isSpeaking = false;
+                    isPaused = false;
+                    currentMessageId = null;
+                };
+                
+                // Speak the text
+                synth.speak(utterance);
+            }
+            
+            // Function to toggle pause/resume
+            function togglePause(button) {
+                if (!isSpeaking) return;
+                
+                if (isPaused) {
+                    // Resume speech
+                    synth.resume();
+                    isPaused = false;
+                    button.classList.remove('paused');
+                    button.setAttribute('data-state', 'play');
+                    button.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                    `;
+                    button.setAttribute('aria-label', 'Pause speech');
+                } else {
+                    // Pause speech
+                    synth.pause();
+                    isPaused = true;
+                    button.classList.add('paused');
+                    button.setAttribute('data-state', 'pause');
+                    button.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    `;
+                    button.setAttribute('aria-label', 'Resume speech');
+                }
+            }
+            
+            // Add event listeners to initial buttons
+            document.querySelectorAll('.audio-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const messageId = this.closest('.message').id;
+                    speakText(messageId, this, this.dataset.message);
+                });
+            });
+            
+            document.querySelectorAll('.pause-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    togglePause(this);
+                });
+            });
+            
+            // Initialize rate sliders
+            document.querySelectorAll('.rate-slider').forEach(slider => {
+                slider.addEventListener('input', function() {
+                    currentSpeechRate = parseFloat(this.value);
+                    
+                    // If currently speaking, update the rate
+                    if (isSpeaking) {
+                        // Get the current message element
+                        const messageElement = document.getElementById(currentMessageId);
+                        if (messageElement) {
+                            // Cancel current speech
+                            synth.cancel();
+                            
+                            // Restart with new rate
+                            const audioButton = messageElement.querySelector('.audio-button');
+                            speakText(currentMessageId, audioButton, audioButton.dataset.message);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

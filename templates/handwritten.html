@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Letter Classification for Dyslexic Users</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: "OpenDyslexic";
+            src: url("data:application/octet-stream;base64,T3BlbkR5c2xleGljIFJlZ3VsYXIgZm9udA==") format("opentype");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "OpenDyslexic";
+            src: url("data:application/octet-stream;base64,T3BlbkR5c2xleGljIEJvbGQgZm9udA==") format("opentype");
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        /* Upload */
+        .upload-container {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .upload-container svg {
+            color: #999;
+            margin-bottom: 1rem;
+        }
+
+        .upload-container p {
+            margin-bottom: 1rem;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Preview */
+        .preview-container {
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            border: none;
+        }
+
+        .button svg {
+            margin-right: 0.5rem;
+        }
+
+        .button.primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .button.primary:hover {
+            background-color: #2563eb;
+        }
+
+        .button.secondary {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .button.secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        /* Result */
+        .result-container {
+            padding: 1rem;
+            border-radius: 8px;
+            min-height: 200px;
+            background: white;
+            border: 1px solid #ddd;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* Settings */
+        .settings-section {
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .settings-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .setting-item label {
+            font-size: 0.875rem;
+        }
+
+        .setting-item input[type="range"] {
+            width: 60%;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #3b82f6;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* High Contrast Mode */
+        .high-contrast {
+            background-color: black !important;
+            color: #ffff00 !important;
+            border-color: #ffff00 !important;
+        }
+
+        /* Loading indicator */
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-container {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Handwritten Letter Classification for Dyslexic Users</h1>
+
+        <div class="app-container">
+            <!-- Input Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Upload Image</h2>
+                </div>
+                <div class="card-content">
+                    <div class="upload-container" id="upload-area">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <p>Upload an image with handwritten letters</p>
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+                        <label for="image-upload" class="button primary">Select Image</label>
+                    </div>
+
+                    <div class="preview-container" id="preview-area">
+                        <h3>Image Preview</h3>
+                        <img id="preview-image" class="preview-image" src="#" alt="Preview of uploaded image">
+                        <div class="button-group" style="justify-content: center; margin-top: 1rem;">
+                            <button id="change-image-button" class="button secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                Change Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="loading-container" id="loading-area">
+                        <div class="loading-spinner"></div>
+                        <p>Classifying letters...</p>
+                    </div>
+
+                    <button id="classify-button" class="button primary full-width" disabled>Classify Letters</button>
+                </div>
+            </div>
+
+            <!-- Result Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Result</h2>
+                </div>
+                <div class="card-content">
+                    <div id="result-text" class="result-container">
+                        Classified letters will appear here
+                    </div>
+
+                    <div class="button-group">
+                        <button id="speak-button" class="button secondary" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                            Read Aloud
+                        </button>
+                        <button id="copy-button" class="button secondary" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copy to Clipboard
+                        </button>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Accessibility Settings</h3>
+
+                        <div class="setting-item">
+                            <label for="font-size">Font Size: <span id="font-size-value">18</span>px</label>
+                            <input type="range" id="font-size" min="14" max="32" step="1" value="18">
+                        </div>
+
+                        <div class="setting-item">
+                            <label for="letter-spacing">Letter Spacing: <span id="letter-spacing-value">0.1</span>em</label>
+                            <input type="range" id="letter-spacing" min="0" max="0.5" step="0.05" value="0.1">
+                        </div>
+
+                        <div class="setting-item">
+                            <label for="line-height">Line Height: <span id="line-height-value">1.5</span></label>
+                            <input type="range" id="line-height" min="1" max="3" step="0.1" value="1.5">
+                        </div>
+
+                        <div class="setting-item">
+                            <label for="high-contrast">High Contrast Mode</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="high-contrast">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label for="dyslexic-font">Use Dyslexic Font</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="dyslexic-font" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const imageUpload = document.getElementById('image-upload');
+            const previewImage = document.getElementById('preview-image');
+            const uploadArea = document.getElementById('upload-area');
+            const previewArea = document.getElementById('preview-area');
+            const loadingArea = document.getElementById('loading-area');
+            const classifyButton = document.getElementById('classify-button');
+            const changeImageButton = document.getElementById('change-image-button');
+            const resultText = document.getElementById('result-text');
+            const speakButton = document.getElementById('speak-button');
+            const copyButton = document.getElementById('copy-button');
+
+            // Image upload and preview
+            imageUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    uploadArea.style.display = 'none';
+                    previewArea.style.display = 'block';
+                    classifyButton.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Change image button
+            changeImageButton.addEventListener('click', function() {
+                uploadArea.style.display = 'block';
+                previewArea.style.display = 'none';
+                classifyButton.disabled = true;
+                imageUpload.value = '';
+            });
+
+            // Classify letters
+            classifyButton.addEventListener('click', async function() {
+                try {
+                    // Show loading state
+                    loadingArea.style.display = 'block';
+                    classifyButton.disabled = true;
+                    resultText.textContent = 'Processing...';
+                    
+                    // Convert image to base64
+                    const imageData = previewImage.src.split(',')[1];
+
+                    // Send to Flask backend
+                    const response = await fetch('http://127.0.0.1:5000/recognize', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ image: imageData }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to classify letters');
+                    }
+
+                    const data = await response.json();
+                    resultText.textContent = data.text;
+                    
+                    // Enable buttons
+                    updateButtonStates(true);
+                } catch (error) {
+                    console.error('Error classifying letters:', error);
+                    resultText.textContent = 'Error classifying letters. Please try again.';
+                    updateButtonStates(false);
+                } finally {
+                    loadingArea.style.display = 'none';
+                    classifyButton.disabled = false;
+                }
+            });
+
+            // Update button states
+            function updateButtonStates(hasText) {
+                speakButton.disabled = !hasText;
+                copyButton.disabled = !hasText;
+            }
+
+            // Text-to-speech
+            speakButton.addEventListener('click', function() {
+                const text = resultText.textContent;
+                if (!text || text === 'Classified letters will appear here') return;
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9; // Slightly slower rate for better comprehension
+                window.speechSynthesis.speak(utterance);
+            });
+
+            // Copy to clipboard
+            copyButton.addEventListener('click', function() {
+                const text = resultText.textContent;
+                if (!text || text === 'Classified letters will appear here') return;
+
+                navigator.clipboard.writeText(text).then(function() {
+                    // Show temporary success message
+                    const originalText = copyButton.innerHTML;
+                    copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                    
+                    setTimeout(function() {
+                        copyButton.innerHTML = originalText;
+                    }, 2000);
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                });
+            });
+
+            // Accessibility settings
+            // Font size
+            const fontSizeSlider = document.getElementById('font-size');
+            const fontSizeValue = document.getElementById('font-size-value');
+            fontSizeSlider.addEventListener('input', function() {
+                const value = this.value;
+                fontSizeValue.textContent = value;
+                resultText.style.fontSize = `${value}px`;
+            });
+
+            // Letter spacing
+            const letterSpacingSlider = document.getElementById('letter-spacing');
+            const letterSpacingValue = document.getElementById('letter-spacing-value');
+            letterSpacingSlider.addEventListener('input', function() {
+                const value = this.value;
+                letterSpacingValue.textContent = value;
+                resultText.style.letterSpacing = `${value}em`;
+            });
+
+            // Line height
+            const lineHeightSlider = document.getElementById('line-height');
+            const lineHeightValue = document.getElementById('line-height-value');
+            lineHeightSlider.addEventListener('input', function() {
+                const value = this.value;
+                lineHeightValue.textContent = value;
+                resultText.style.lineHeight = value;
+            });
+
+            // High contrast mode
+            document.getElementById('high-contrast').addEventListener('change', function() {
+                if (this.checked) {
+                    resultText.classList.add('high-contrast');
+                } else {
+                    resultText.classList.remove('high-contrast');
+                }
+            });
+
+            // Dyslexic font
+            document.getElementById('dyslexic-font').addEventListener('change', function() {
+                if (this.checked) {
+                    resultText.style.fontFamily = "'OpenDyslexic', sans-serif";
+                } else {
+                    resultText.style.fontFamily = "'Inter', sans-serif";
+                }
+            });
+
+            // Initialize accessibility settings
+            resultText.style.fontSize = `${fontSizeSlider.value}px`;
+            resultText.style.letterSpacing = `${letterSpacingSlider.value}em`;
+            resultText.style.lineHeight = lineHeightSlider.value;
+            
+            if (document.getElementById('dyslexic-font').checked) {
+                resultText.style.fontFamily = "'OpenDyslexic', sans-serif";
+            }
+        });
+    </script>
+</body>
+</html>
